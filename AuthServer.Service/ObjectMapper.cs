@@ -10,7 +10,7 @@ namespace AuthServer.Service
     public static class ObjectMapper
     {
         //Proje ilk ayağa kalktığında ayağa kalkmaz. İlk çağrıldığında ayağa kalkar (Lazy Loading)
-        private static readonly Lazy<IMapper> lazy = new Lazy<IMapper>(() =>
+        private static readonly Lazy<IMapper> lazy = new(() =>
         {
             var config = new MapperConfiguration(cfg =>
             {
