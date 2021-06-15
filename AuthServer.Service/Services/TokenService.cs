@@ -37,7 +37,7 @@ namespace AuthServer.Service.Services
 
             return Convert.ToBase64String(numberByte);
         }
-        private IEnumerable<Claim> GetClaim(UserApp userApp,List<string> audiences)
+        private IEnumerable<Claim> GetClaims(UserApp userApp,List<string> audiences)
         {
             var userList = new List<Claim>
             {
@@ -47,11 +47,25 @@ namespace AuthServer.Service.Services
                 new Claim(JwtRegisteredClaimNames.Jti,Guid.NewGuid().ToString())
             };
             //audiences lerini ekledik
-            userList.AddRange(audiences.Select(p => new Claim(JwtRegisteredClaimNames.Aud, p));
+            userList.AddRange(audiences.Select(p => new Claim(JwtRegisteredClaimNames.Aud, p)));
             return userList;
 
 
         }
+        private IEnumerable<Claim> GetClaimsByClient(Client client)
+        {
+            var claims = new List<Claim>
+            {
+                new Claim(JwtRegisteredClaimNames.Jti,Guid.NewGuid().ToString()),
+                //Sub => Kimin için oluşturuyoruz
+                new Claim(JwtRegisteredClaimNames.Sub,client.Id.ToString())
+            };
+            claims.AddRange(client.Audiences.Select(p => new Claim(JwtRegisteredClaimNames.Aud, p)));
+            return claims;
+
+
+        }
+
         public TokenDto CreateToken(UserApp userApp)
         {
             throw new NotImplementedException();
