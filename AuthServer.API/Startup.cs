@@ -1,4 +1,4 @@
-using AuthServer.Core.Configuration;
+﻿using AuthServer.Core.Configuration;
 using AuthServer.Core.Models;
 using AuthServer.Core.Repositories;
 using AuthServer.Core.Services;
@@ -6,6 +6,7 @@ using AuthServer.Core.UnitOfWork;
 using AuthServer.Data;
 using AuthServer.Data.Repositories;
 using AuthServer.Service.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -56,8 +57,41 @@ namespace AuthServer.API
 
             //Options Pattern
             services.Configure<CustomTokenOption>(Configuration.GetSection("TokenOption"));
+            var tokenOptions = Configuration.GetSection("TokenOption").Get<CustomTokenOption>();
             //Options Pattern
             services.Configure<List<Client>>(Configuration.GetSection("Clients"));
+
+
+
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
+            {
+                options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters()
+                {
+
+                    ValidIssuer = tokenOptions.Issuer,
+                    ValidAudience = tokenOptions.Audience[0],
+                    IssuerSigningKey = SignService.GetSymmetricSecurityKey(tokenOptions.SecurityKey),
+                    // Kontrol edilecekleri true yaptık
+                    ValidateIssuerSigningKey = true,
+                    ValidateAudience = true,
+                    ValidateIssuer = true,
+                    ValidateLifetime = true,
+                    //Identity kütüphanesi default olarak +5 dakika süre ekliyor bu süresi iptal etmek için TimeSpan.Zero yaparak sıfıra çekilebilir.
+                    ClockSkew = System.TimeSpan.Zero
+                };
+            });
+
+
+
+
+
+
+
+
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
@@ -76,7 +110,7 @@ namespace AuthServer.API
             }
 
             app.UseHttpsRedirection();
-
+            
             app.UseRouting();
 
             app.UseAuthorization();
