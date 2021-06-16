@@ -19,7 +19,7 @@ using Microsoft.OpenApi.Models;
 using SharedLibrary.Configuration;
 using SharedLibrary.Services;
 using System.Collections.Generic;
-
+using SharedLibrary.Extensions;
 namespace AuthServer.API
 {
     public class Startup
@@ -98,7 +98,7 @@ namespace AuthServer.API
             {
                 options.RegisterValidatorsFromAssemblyContaining<Startup>();
             });
-            
+            services.UseCustomValidationResponse();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "AuthServer.API", Version = "v1" });
