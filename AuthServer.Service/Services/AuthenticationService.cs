@@ -5,6 +5,7 @@ using AuthServer.Core.Repositories;
 using AuthServer.Core.Services;
 using AuthServer.Core.UnitOfWork;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using SharedLibrary.Dto;
 using System;
@@ -25,8 +26,8 @@ namespace AuthServer.Service.Services
         private readonly IGenericRepository<UserRefreshToken> _userRefreshTokenRepository;
 
         public AuthenticationService(
-            IGenericRepository<UserRefreshToken> userRefreshTokenRepository, 
-            IOptions<List<Client>> optionsClient, 
+            IGenericRepository<UserRefreshToken> userRefreshTokenRepository,
+            IOptions<List<Client>> optionsClient,
             ITokenService tokenService,
             UserManager<UserApp> userManager,
             IUnitOfWork unitOfWork
@@ -39,9 +40,31 @@ namespace AuthServer.Service.Services
             _unitOfWork = unitOfWork;
         }
 
-        public Task<Response<TokenDto>> CreateToken(LoginDto loginDto)
+        public async Task<Response<TokenDto>> CreateToken(LoginDto loginDto)
         {
-            throw new NotImplementedException();
+            //Savunmacı kod yaklaşımı
+            if (loginDto == null) throw new ArgumentNullException(nameof(loginDto));
+            var user = await _userManager.FindByEmailAsync(loginDto.Email);
+            //Savunmacı kod yaklaşımı
+            if (user == null) return Response<TokenDto>.Fail("Email or Password is wrong", 400, true);
+            if (!await _userManager.CheckPasswordAsync(user, loginDto.Password)) return Response<TokenDto>.Fail("Email or Password is wrong", 400, true);
+            var token = _tokenService.CreateToken(user);
+            var userRefreshToken = await _userRefreshTokenRepository.Where(p => p.UserId == user.Id).SingleOrDefaultAsync();
+           // Token yoksa sıfırdan oluştur.
+            if (userRefreshToken == null) await _userRefreshTokenRepository.AddAsync(new UserRefreshToken
+            {
+                UserId = user.Id,
+                Code = token.RefreshToken,
+                Expiration = token.RefreshTokenExpression
+            });
+            else
+            {
+                userRefreshToken.Code = token.RefreshToken;
+                userRefreshToken.Expiration = token.RefreshTokenExpression;
+
+            }
+            await _unitOfWork.CommitAsync();
+            return Response<TokenDto>.Success(token, 200);
         }
 
         public Task<Response<ClientTokenDto>> CreateTokenByClient(ClientLoginDto clientLoginDto)
