@@ -75,9 +75,18 @@ namespace AuthServer.Service.Services
             return Response<ClientTokenDto>.Success(token, 200);
         }
 
-        public Task<Response<TokenDto>> CreateTokenByRefreshToken(string refreshToken)
+        public async Task<Response<TokenDto>> CreateTokenByRefreshToken(string refreshToken)
         {
-            throw new NotImplementedException();
+            var exitsRefreshToken = await _userRefreshTokenRepository.Where(p => p.Code == refreshToken).SingleOrDefaultAsync();
+            if (exitsRefreshToken == null) return Response<TokenDto>.Fail("Refresh Token not found", 404, true);
+            var user = await _userManager.FindByIdAsync(exitsRefreshToken.UserId);
+            if (user == null) return Response<TokenDto>.Fail("UserId not found", 404, true);
+            var tokenDto = _tokenService.CreateToken(user);
+            exitsRefreshToken.Code = tokenDto.RefreshToken;
+            exitsRefreshToken.Expiration = tokenDto.RefreshTokenExpression;
+            await _unitOfWork.CommitAsync();
+            return Response<TokenDto>.Success(tokenDto, 200);
+
         }
 
         public Task<Response<NoDataDto>> RevokeRefreshToken(string refreshToke)
