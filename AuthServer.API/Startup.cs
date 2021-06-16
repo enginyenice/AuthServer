@@ -31,7 +31,7 @@ namespace AuthServer.API
             //Options Pattern
             services.Configure<CustomTokenOption>(Configuration.GetSection("TokenOption"));
             //Options Pattern
-            services.Configure<Client>(Configuration.GetSection("Clients"));
+            services.Configure<List<Client>>(Configuration.GetSection("Clients"));
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
