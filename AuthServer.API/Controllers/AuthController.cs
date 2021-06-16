@@ -23,7 +23,7 @@ namespace AuthServer.API.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateToken(LoginDto loginDto)
         {
-            throw new CustomException("Custom bir hata meydana geldi");
+            //throw new CustomException("Custom bir hata meydana geldi (Örnek)");
             var result = await _authenticationService.CreateToken(loginDto);
             return ActionResultInstance(result);
         }
