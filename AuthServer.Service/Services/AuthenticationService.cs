@@ -50,7 +50,7 @@ namespace AuthServer.Service.Services
             if (!await _userManager.CheckPasswordAsync(user, loginDto.Password)) return Response<TokenDto>.Fail("Email or Password is wrong", 400, true);
             var token = _tokenService.CreateToken(user);
             var userRefreshToken = await _userRefreshTokenRepository.Where(p => p.UserId == user.Id).SingleOrDefaultAsync();
-           // Token yoksa sıfırdan oluştur.
+            // Token yoksa sıfırdan oluştur.
             if (userRefreshToken == null) await _userRefreshTokenRepository.AddAsync(new UserRefreshToken
             {
                 UserId = user.Id,
@@ -67,9 +67,12 @@ namespace AuthServer.Service.Services
             return Response<TokenDto>.Success(token, 200);
         }
 
-        public Task<Response<ClientTokenDto>> CreateTokenByClient(ClientLoginDto clientLoginDto)
+        public Response<ClientTokenDto> CreateTokenByClient(ClientLoginDto clientLoginDto)
         {
-            throw new NotImplementedException();
+            var client = _clients.SingleOrDefault(p => p.Id == clientLoginDto.ClientId && p.Secret == clientLoginDto.ClientSecret);
+            if (client == null) return Response<ClientTokenDto>.Fail("ClientId or Secret not found", 404, true);
+            var token = _tokenService.CreateTokenByClient(client);
+            return Response<ClientTokenDto>.Success(token, 200);
         }
 
         public Task<Response<TokenDto>> CreateTokenByRefreshToken(string refreshToken)
