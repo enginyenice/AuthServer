@@ -17,9 +17,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using SharedLibrary.Configuration;
+using SharedLibrary.Extensions;
 using SharedLibrary.Services;
 using System.Collections.Generic;
-using SharedLibrary.Extensions;
+
 namespace AuthServer.API
 {
     public class Startup
@@ -113,8 +114,13 @@ namespace AuthServer.API
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "AuthServer.API v1"));
+            } else
+            {
+                //Development ortamında dönmesine gerek yok
+                //app.UseCustomException();    
             }
 
+            app.UseCustomException();
             app.UseHttpsRedirection();
 
             app.UseRouting();

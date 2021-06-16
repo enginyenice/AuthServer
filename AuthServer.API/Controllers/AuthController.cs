@@ -2,6 +2,7 @@
 using AuthServer.Core.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using SharedLibrary.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,6 +23,7 @@ namespace AuthServer.API.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateToken(LoginDto loginDto)
         {
+            throw new CustomException("Custom bir hata meydana geldi");
             var result = await _authenticationService.CreateToken(loginDto);
             return ActionResultInstance(result);
         }
