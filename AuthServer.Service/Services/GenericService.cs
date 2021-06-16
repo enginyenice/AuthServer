@@ -12,12 +12,12 @@ using System.Threading.Tasks;
 
 namespace AuthServer.Service.Services
 {
-    public class ServiceGeneric<TEntity, TDto> : IServiceGeneric<TEntity, TDto> where TEntity : class where TDto : class
+    public class GenericService<TEntity, TDto> : IGenericService<TEntity, TDto> where TEntity : class where TDto : class
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IGenericRepository<TEntity> _genericRepository;
 
-        public ServiceGeneric(IGenericRepository<TEntity> genericRepository, IUnitOfWork unitOfWork)
+        public GenericService(IGenericRepository<TEntity> genericRepository, IUnitOfWork unitOfWork)
         {
             _genericRepository = genericRepository;
             _unitOfWork = unitOfWork;
